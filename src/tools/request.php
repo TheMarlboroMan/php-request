@@ -13,13 +13,24 @@ class request_exception_no_cli extends request_exception {
 	public function __construct() {parent::__construct("cannot create web request in cli mode. Use alternative constructors.");}
 };
 
-class body {
+class request_body {
 
 	private $headers=[];
 	private $body=null;
 	private $name=null; //After content disposition, which is always form-data.
-//	private $is_a_file=null; //TODO: public function is_file();
 	private $filename=null;
+
+	public function	is_file() {
+		//TODO...
+	}
+
+	public static function	from_raw_part($_raw) {
+
+	}
+
+	private function __construct() {
+
+	}
 
 /*
 ------------------------1cd9f201078b387e
@@ -64,15 +75,16 @@ class request {
 			$_SERVER['REQUEST_URI'],
 			$_SERVER['SERVER_PROTOCOL'],
 			$headers,
-			self::can_get_body_from_input($headers, $method) ? file_get_contents('php://input') : self::raw_body_from_php_parsed_data($_POST, $_FILES, $headers));
+			//TODO: There should be an option to do it less expensively, without recombining file data.
+			self::can_get_body_from_input($headers, $method) ? 
+				file_get_contents('php://input') : 
+				self::raw_body_from_php_parsed_data($_POST, $_FILES, $headers));
 	}
 
 	public function	get_method() {return $this->method;}
-
 	public function get_query_string() {return $this->query_string;}
 
-	//TODO: ACTUALLY: SEPARATE IN TWO: THE MULTIPART AND THE NON MULTIPART....
-
+	//TODO: Should actually be another class.
 	//TODO: What about multiple bodies???.
 	public function	get_body() {
 		if($this->is_multipart()) {
@@ -81,21 +93,26 @@ class request {
 		return $this->body;
 	}
 
+	//TODO: Should actually be another class.
 	//TODO: What about multiple bodies???
-	public function get_body_form() {return self::as_query_string($this->body);}
-
-	//TODO: public function get_bodies() {} //Throw if not multipart.
-	//TODO: public function get_body_index($v) {} //Throw if not multipart.
-
-	public function get_query_string_form() {
+	//TODO: Cache.
+	public function get_body_form() {
 		if($this->is_multipart()) {
 			throw new request_exception('cannot access single body for multipart requests');
 		}
+		return self::as_query_string($this->body);
+	}
+
+	//TODO: Should actually be another class.
+	//TODO: public function get_bodies() {} //Throw if not multipart.
+	//TODO: public function get_body_index($v) {} //Throw if not multipart.
+	//TODO: Cache.
+	public function get_query_string_form() {
 		return self::as_query_string($this->query_string);
 	}
 
 
-
+	//TODO: This should be another class.
 	public function is_multipart() {
 		//TODO: Mind the casing.
 		return isset($this->headers['Content-Type']) && false!==strpos($this->headers['Content-Type'], 'multipart/form-data');
@@ -109,16 +126,38 @@ class request {
 		$this->status="{$_method} {$_uri} {$_protocol}";
 		$this->headers=$_headers;
 
-		if(this->is_multipart()) {
-			die('sorry, multipart/form-data is not yet implemented!');
-			//TODO: Each body part should be a instance of "body", with headers and shit.
-			//TODO: A facility method for compacting non-file multipart bodies into a query string could be added.
-			//TODO: A facility method for compacting multipart files into other data could be added.
-			//TODO: $body should be left to null and throw if accessed.
+		//TODO: These should be different classes.
+		if($this->is_multipart()) {
+			//TODO: Mind the letter casing...
+			self::decode_multipart_bodies($this->bodies, $_body, self::boundary_from_content_type_header($this->headers['Content-Type']);
 		}
 		else {
 			$this->body=$_body;
 		}
+	}
+
+	////////////////////////////////////////////////////////////////////////
+
+	private function	decode_multipart_bodies(array &$_bodies, $_body, $_boundary) {
+
+		//TODO: Tokenize by $_boundary and interpret. Each one goes into its own body.
+		//TODO: Instead of tokenizing, read line by line.
+		//TODO: Use the request_body class.
+
+		$line=strtok($_body, PHP_EOL);
+
+		while(false!==$line) {
+			//TODO: Do shit with line...
+			//TODO: is it the boundary?
+			//TODO: Is it the boundary plus --???
+			//TODO: Is it a header?
+			//TODO: Is it a blank line?
+			//TODO: Is it the body part?
+			//TODO: Shall we create a new request_body object?
+			$line=strtok(PHP_EOL);
+		}
+
+		die($_body);
 	}
 
 	////////////////////////////////////////////////////////////////////////
@@ -134,7 +173,7 @@ class request {
 		}
 	}
 
-	//Returns $_str as a query string, useful to parse post or get data to familiar PHP forms.
+	//!Returns $_str as a query string, useful to parse post or get data to familiar PHP forms.
 	private static function as_query_string($_str) {
 
 		$result=[];
@@ -149,13 +188,16 @@ class request {
 		return ! ('POST'===strtoupper($method) && isset($_headers['Content-Type']) && false!==strpos($_headers['Content-Type'], 'multipart/form-data'));
 	}
 
-	//!Converts the post and files superglobals into their original raw forms.
-	private static function raw_body_from_php_parsed_data($_post, $_files, $_headers) {
-
+	private static function	boundary_from_content_type_header($_header) {
 		//TODO: Mind the letter casing.
-		$content_type=$_headers['Content-Type'];
 		//Lol... Explode the header by ;, the second part is the boundary=xxxx part. Explode that by = and return the second part.
-		$boundary=trim(explode('=', explode(';',$_headers['Content-Type'], 2)[1])[1]);
+		return 	trim(explode('=', explode(';',$_headers['Content-Type'], 2)[1])[1]);
+	}
+
+	//!Converts the post and files superglobals into their original raw forms.
+	private static function raw_body_from_php_parsed_data(array $_post, array $_files, array $_headers) {
+
+		$boundary=self::boundary_from_content_type_header($_headers['Content-Type']);
 
 		//First the post data...
 		$post_data=null;
@@ -171,6 +213,7 @@ R;
 
 		//TODO: What about invalid files???
 		//TODO: Try sending an empty file!.
+		//TODO: There should be an option to be a little less hardcore.
 
 		$file_data=null;
 		foreach($_files as $k => $v) {
@@ -185,10 +228,8 @@ Content-Type: {$v['type']}
 R;
 		}
 
-		$raw_body=<<<R
+		return <<<R
 {$post_data}{$file_data}{$boundary}--
 R;
-
-		return $raw_body;
 	}
 };
