@@ -36,7 +36,9 @@ else {
 	try {
 
 		$request=\tools\request::from_apache_request();
-		print_r($request->get_body_form());
+
+		die('done');
+//		print_r($request->get_body_form());
 	}
 	catch(\Exception $e) {
 		die("ERROR:".$e->getMessage()."\n");

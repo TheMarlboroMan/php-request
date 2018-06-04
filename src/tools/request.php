@@ -54,13 +54,15 @@ HOLA
 
 class request {
 
+	//TODO: Add cookies
+
 	private	$status=null;
 	private	$method=null;
 	private $uri=null;
 	private $query_string=null;
-	private	$body=null;
+	private	$body=null;	//TODO: Likely a reference to bodies[0]...
 	private $bodies=[];	//Multiple body parts, you see...
-	private	$headers=[];
+	private	$headers=null;
 
 	public static function	from_apache_request() {
 
@@ -81,12 +83,18 @@ class request {
 				self::raw_body_from_php_parsed_data($_POST, $_FILES, $headers));
 	}
 
-	public function	get_method() {return $this->method;}
-	public function get_query_string() {return $this->query_string;}
+	public function		get_method() {
+		return $this->method;
+	}
+
+	public function 	get_query_string() {
+		return $this->query_string;
+	}
 
 	//TODO: Should actually be another class.
 	//TODO: What about multiple bodies???.
-	public function	get_body() {
+	public function		get_body() {
+
 		if($this->is_multipart()) {
 			throw new request_exception('cannot access single body for multipart requests');
 		}
@@ -96,7 +104,8 @@ class request {
 	//TODO: Should actually be another class.
 	//TODO: What about multiple bodies???
 	//TODO: Cache.
-	public function get_body_form() {
+	public function 	get_body_form() {
+
 		if($this->is_multipart()) {
 			throw new request_exception('cannot access single body for multipart requests');
 		}
@@ -107,18 +116,24 @@ class request {
 	//TODO: public function get_bodies() {} //Throw if not multipart.
 	//TODO: public function get_body_index($v) {} //Throw if not multipart.
 	//TODO: Cache.
-	public function get_query_string_form() {
+	public function 	get_query_string_form() {
+
 		return self::as_query_string($this->query_string);
 	}
 
 
 	//TODO: This should be another class.
-	public function is_multipart() {
-		//TODO: Mind the casing.
+	public function 	is_multipart() {
+
+			//TODO: Should not happen...  More like an assert.
+		if(null===$this->headers) {
+			throw new request_exception("is_multipart called before headers were set");
+		}
+
 		return isset($this->headers['Content-Type']) && false!==strpos($this->headers['Content-Type'], 'multipart/form-data');
 	}
 
-	private function __construct($_method, $_uri, $_protocol, array $_headers, $_body) {
+	private function 	__construct($_method, $_uri, $_protocol, array $_headers, $_body) {
 
 		$this->method=$_method;
 		$this->uri=$_uri;
@@ -129,35 +144,69 @@ class request {
 		//TODO: These should be different classes.
 		if($this->is_multipart()) {
 			//TODO: Mind the letter casing...
-			self::decode_multipart_bodies($this->bodies, $_body, self::boundary_from_content_type_header($this->headers['Content-Type']);
+			self::parse_multipart_bodies($this->bodies, $_body, self::boundary_from_content_type_header($this->headers['Content-Type']));
 		}
 		else {
+die('not multipart');
 			$this->body=$_body;
 		}
 	}
 
 	////////////////////////////////////////////////////////////////////////
 
-	private function	decode_multipart_bodies(array &$_bodies, $_body, $_boundary) {
+	//TODO: This should be another class...
+	private function	parse_multipart_bodies(array &$_bodies, $_body, $_boundary) {
 
 		//TODO: Tokenize by $_boundary and interpret. Each one goes into its own body.
 		//TODO: Instead of tokenizing, read line by line.
 		//TODO: Use the request_body class.
 
+		$end_boundary=$_boundary.'--';
 		$line=strtok($_body, PHP_EOL);
+
+		//$current_part=new request_body;
+
+		$state=null;
 
 		while(false!==$line) {
 			//TODO: Do shit with line...
-			//TODO: is it the boundary?
-			//TODO: Is it the boundary plus --???
-			//TODO: Is it a header?
-			//TODO: Is it a blank line?
-			//TODO: Is it the body part?
-			//TODO: Shall we create a new request_body object?
+			echo "***".$line."***".PHP_EOL;
+
+			if($_boundary==$line) {
+				//TODO...
+				$state="headers";
+				$line=strtok(PHP_EOL);
+				continue;
+			}
+			else if($end_boundary==$line) {
+				$state="done";
+				$line=strtok(PHP_EOL);
+				continue;
+
+			}
+			else if(0==strlen($line)) {
+				$state="body";
+				$line=strtok(PHP_EOL);
+				continue;
+			}
+			//TODO: fuck strings.
+			//TODO: Check the body_part class to get ideas.
+			switch($state) {
+				case "headers":
+					//TODO: Decode line as header.
+				break;
+				case "done":
+					//TODO
+				break;
+				case "body":
+					//TODO: Add shit to body.
+				break;
+			}
+			
 			$line=strtok(PHP_EOL);
 		}
 
-		die($_body);
+		die("!!!".$_body);
 	}
 
 	////////////////////////////////////////////////////////////////////////
@@ -189,9 +238,10 @@ class request {
 	}
 
 	private static function	boundary_from_content_type_header($_header) {
+
 		//TODO: Mind the letter casing.
 		//Lol... Explode the header by ;, the second part is the boundary=xxxx part. Explode that by = and return the second part.
-		return 	trim(explode('=', explode(';',$_headers['Content-Type'], 2)[1])[1]);
+		return 	trim(explode('=', explode(';',$_header, 2)[1])[1]);
 	}
 
 	//!Converts the post and files superglobals into their original raw forms.
@@ -213,10 +263,16 @@ R;
 
 		//TODO: What about invalid files???
 		//TODO: Try sending an empty file!.
-		//TODO: There should be an option to be a little less hardcore.
+		//TODO: There should be an option to be a little less hardcore, like just grab $_FILES.
 
 		$file_data=null;
 		foreach($_files as $k => $v) {
+
+			//TODO: Won't allow PHP compatibility.
+			if(!file_exists($v['tmp_name'])) {
+				continue;
+			}
+
 			$file_body=file_get_contents($v['tmp_name']);
 			$file_data.=<<<R
 {$boundary}
