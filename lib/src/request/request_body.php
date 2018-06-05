@@ -1,5 +1,5 @@
 <?php
-namespace tools;
+namespace request;
 
 class request_body {
 
@@ -18,7 +18,7 @@ class request_body {
 
 	public function get_name() {
 			return $this->name;
-	}	
+	}
 
 	public function __construct($_b, array $_h) {
 		$this->body=$_b;

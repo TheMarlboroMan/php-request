@@ -1,5 +1,5 @@
 <?php
-namespace tools;
+namespace request;
 
 class raw_request_body_tools {
 

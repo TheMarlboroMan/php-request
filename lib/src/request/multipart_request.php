@@ -1,5 +1,5 @@
 <?php
-namespace tools;
+namespace request;
 
 //TODO: Move into own file,
 class request_exception_body_index_out_of_bounds extends request_exception {

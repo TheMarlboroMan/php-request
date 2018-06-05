@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors', 1);
 ini_set('error_reporting', -1);
-include "autoload.php";
+include "lib/autoload.php";
 
 session_start();
 
@@ -36,12 +36,10 @@ R;
 else {
 	try {
 
-		$request=\tools\request_factory::from_apache_request();
+		$request=request\request_factory::from_apache_request();
 
 		$data=print_r($request, true);
 		echo $data;
-		//echo nl2br($data);
-		//print_r($request->get_body_form());
 		die('end');
 	}
 	catch(\Exception $e) {

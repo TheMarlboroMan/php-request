@@ -1,5 +1,5 @@
 <?php
-namespace tools;
+namespace request;
 
 class request_exception_no_cli extends request_exception {
 	public function __construct() {parent::__construct("cannot create web request in cli mode.");}

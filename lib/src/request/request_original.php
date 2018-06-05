@@ -1,5 +1,5 @@
 <?php
-namespace tools;
+namespace request;
 
 class request_exception extends \Exception {
 	public function __construct($_msg=null) {

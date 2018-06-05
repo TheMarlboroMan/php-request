@@ -1,5 +1,5 @@
 <?php
-namespace tools;
+namespace request;
 
 abstract class request {
 
