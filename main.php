@@ -3,6 +3,7 @@ ini_set('display_errors', 1);
 ini_set('error_reporting', -1);
 include "autoload.php";
 
+session_start();
 
 if(!isset($_POST['userid'])) {
 
@@ -35,10 +36,13 @@ R;
 else {
 	try {
 
-		$request=\tools\request::from_apache_request();
+		$request=\tools\request_factory::from_apache_request();
 
-		die('done');
-//		print_r($request->get_body_form());
+		$data=print_r($request, true);
+		echo $data;
+		//echo nl2br($data);
+		//print_r($request->get_body_form());
+		die('end');
 	}
 	catch(\Exception $e) {
 		die("ERROR:".$e->getMessage()."\n");
