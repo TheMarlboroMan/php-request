@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors', 1);
 ini_set('error_reporting', -1);
-include "lib/autoload.php";
+include "../lib/autoload.php";
 
 session_start();
 
