@@ -13,6 +13,8 @@ class request_exception_body_name_not_found extends request_exception {
 
 class multipart_request extends request {
 
+	//TODO: Add the option to collapse non file body parts to form data...
+
 	private $bodies=[];	//Multiple body parts, you see...
 
 	public function 	__construct($_method, $_uri, $_protocol, array $_headers, $_body) {

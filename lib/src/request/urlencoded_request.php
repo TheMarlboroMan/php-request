@@ -23,10 +23,17 @@ class urlencoded_request extends request {
 
 	public function 	get_body_form() {
 
+		//TODO: Should throw if not parseable.
 		if(null===$this->body_form) {
 			parse_str($this->body, $this->body_form);
 		}
 
 		return $this->body_form;
+	}
+
+	public function		get($_key, $_default=null) {
+
+		$data=$this->get_body_form();
+		return isset($data[$_key]) ? $data[$_key] : $_default;
 	}
 };
