@@ -5,6 +5,19 @@ class request_exception_no_cli extends request_exception {
 	public function __construct() {parent::__construct("cannot create web request in cli mode.");}
 };
 
+//https://stackoverflow.com/questions/41427359/phpunit-getallheaders-not-work/4142872
+if (!function_exists('getallheaders')) {
+    function getallheaders() {
+	    $headers = [];
+	    foreach ($_SERVER as $name => $value) {
+	        if (substr($name, 0, 5) == 'HTTP_') {
+	            $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+	        }
+	    }
+	    return $headers;
+    }
+}
+
 class request_factory {
 
 	public static function	from_apache_request() {
@@ -13,12 +26,12 @@ class request_factory {
 			throw new request_exception_no_cli;
 		}
 
-		$headers=getallheaders();
+		$headers=\getallheaders();
 		$method=$_SERVER['REQUEST_METHOD'];
 		$uri=$_SERVER['REQUEST_URI'];
 		$protocol=$_SERVER['SERVER_PROTOCOL'];
 		$body=self::can_get_body_from_input($headers, $method) ?
-					file_get_contents('php://input') :
+					\file_get_contents('php://input') :
 					raw_request_body_tools::raw_body_from_php_parsed_data($_POST, $_FILES, $headers);
 
 		return self::is_multipart($headers) ?
