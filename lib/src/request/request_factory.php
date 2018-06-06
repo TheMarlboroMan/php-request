@@ -26,7 +26,7 @@ class request_factory {
 			throw new request_exception_no_cli;
 		}
 
-		$headers=\getallheaders();
+		$headers=getallheaders();
 		$method=$_SERVER['REQUEST_METHOD'];
 		$uri=$_SERVER['REQUEST_URI'];
 		$protocol=$_SERVER['SERVER_PROTOCOL'];
