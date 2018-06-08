@@ -28,7 +28,7 @@ abstract class request {
 	}
 
 	public function		get_headers() {
-		return $this->headers();
+		return $this->headers;
 	}
 
 	public function 	header_exists($_key) {
