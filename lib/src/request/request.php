@@ -50,7 +50,7 @@ abstract class request {
 		return $this->query_string_form;
 	}
 
-	protected function 	__construct($_method, $_uri, $query_string, $_protocol, array $_headers) {
+	protected function 	__construct($_method, $_uri, $_query_string, $_protocol, array $_headers) {
 
 		$this->method=$_method;
 		$this->uri=$_uri;
