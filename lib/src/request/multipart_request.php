@@ -17,9 +17,9 @@ class multipart_request extends request {
 
 	private $bodies=[];	//Multiple body parts, you see...
 
-	public function 	__construct($_method, $_uri, $_protocol, array $_headers, $_body) {
+	public function 	__construct($_method, $_uri, $_query_string, $_protocol, array $_headers, $_body) {
 
-		parent::__construct($_method, $_uri, $_protocol, $_headers);
+		parent::__construct($_method, $_uri, $_query_string, $_protocol, $_headers);
 		raw_request_body_tools::parse_multipart_bodies($this->bodies, $_body, raw_request_body_tools::boundary_from_content_type_header($_headers['Content-Type']));
 	}
 

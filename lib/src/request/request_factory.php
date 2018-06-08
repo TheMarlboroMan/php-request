@@ -29,14 +29,15 @@ class request_factory {
 		$headers=getallheaders();
 		$method=$_SERVER['REQUEST_METHOD'];
 		$uri=$_SERVER['REQUEST_URI'];
+		$query_string=$_SERVER['QUERY_STRING'];
 		$protocol=$_SERVER['SERVER_PROTOCOL'];
 		$body=self::can_get_body_from_input($headers, $method) ?
 					\file_get_contents('php://input') :
 					raw_request_body_tools::raw_body_from_php_parsed_data($_POST, $_FILES, $headers);
 
 		return self::is_multipart($headers) ?
-				new multipart_request($method, $uri, $protocol, $headers, $body) :
-				new urlencoded_request($method, $uri, $protocol, $headers, $body);
+				new multipart_request($method, $uri, $query_string, $protocol, $headers, $body) :
+				new urlencoded_request($method, $uri, $query_string, $protocol, $headers, $body);
 	}
 
 	private static function	is_multipart($_headers) {
