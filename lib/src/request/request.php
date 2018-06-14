@@ -38,9 +38,13 @@ abstract class request {
 	public function		get_uri_without_query_string() {
 
 		$qstrlen=strlen($this->query_string);
-		$len=$qstrlen ? ++$qstrlen : 0; //Remove the ?.
 
-		return substr($this->uri, 0, -$len);
+		if($qstrlen) {
+			return substr($this->uri, 0, -(++$qstrlen));
+		}
+		else {
+			return $this->uri;
+		}
 	}
 
 	public function 	header_exists($_key) {
