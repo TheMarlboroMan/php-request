@@ -36,7 +36,7 @@ abstract class request {
 	}
 
 	public function		get_uri_without_query_string() {
-		return substr($this->uri, 0, strlen($this->query_string));
+		return substr($this->uri, 0, -strlen($this->query_string));
 	}
 
 	public function 	header_exists($_key) {
