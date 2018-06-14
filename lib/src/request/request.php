@@ -31,6 +31,14 @@ abstract class request {
 		return $this->headers;
 	}
 
+	public function		get_uri() {
+		return $this->uri;
+	}
+
+	public function		get_uri_without_query_string() {
+		return substr($this->uri, 0, strlen($this->query_string));
+	}
+
 	public function 	header_exists($_key) {
 		return isset($this->headers[$_key]);
 	}
