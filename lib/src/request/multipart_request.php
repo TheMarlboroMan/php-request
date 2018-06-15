@@ -15,25 +15,25 @@ class multipart_request extends request {
 
 	//TODO: Add the option to collapse non file body parts to form data...
 
-	private $bodies=[];	//Multiple body parts, you see...
+	private 				$bodies=[];	//Multiple body parts, you see...
 
-	public function 	__construct($_method, $_uri, $_query_string, $_protocol, array $_headers, $_body) {
+	public function 		__construct($_method, $_uri, $_query_string, $_protocol, array $_headers, $_body) {
 
 		parent::__construct($_method, $_uri, $_query_string, $_protocol, $_headers);
 		raw_request_body_tools::parse_multipart_bodies($this->bodies, $_body, raw_request_body_tools::boundary_from_content_type_header($_headers['Content-Type']));
 	}
 
-	public function 	is_multipart() {
+	public function 		is_multipart() {
 
 		return true;
 	}
 
-	public function		count() {
+	public function			count() {
 
 		return count($this->bodies);
 	}
 
-	public function		body_name_exists($_name) {
+	public function			body_name_exists($_name) {
 
 		foreach($this->bodies as $k => $v) {
 			if($v->get_name() == $_name) {
@@ -44,7 +44,7 @@ class multipart_request extends request {
 		return false;
 	}
 
-	public function		get_body_by_name($_name) {
+	public function			get_body_by_name($_name) {
 
 		foreach($this->bodies as $k => $v) {
 			if($v->get_name() == $_name) {
@@ -55,7 +55,7 @@ class multipart_request extends request {
 		throw new request_exception_body_name_not_found;
 	}
 
-	public function		get_body_by_index($_index) {
+	public function			get_body_by_index($_index) {
 
 		if($_index < 0 || $_index >= $this->count()) {
 
@@ -63,5 +63,18 @@ class multipart_request extends request {
 		}
 
 		return $this->bodies[$_index];
+	}
+
+	protected function		body_to_string() {
+
+		$boundary=raw_request_body_tools::boundary_from_content_type_header($this->get_header('Content-Type'));
+
+		$bodies=array_reduce($this->bodies, function($_carry, request_body $_item) use ($boundary) {
+
+			$_carry.=$_item->to_string($boundary);
+			return $_carry;
+		}, '');
+
+		return $bodies.$boundary.'--';
 	}
 };

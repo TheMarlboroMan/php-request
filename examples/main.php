@@ -41,9 +41,10 @@ else {
 		setcookie ("The-third-cookie", "With;loads=of;crap", time()+120, '/');
 		$request=request\request_factory::from_apache_request();
 
-		$data=print_r($request, true);
-		echo $data;
-		die('end');
+		echo $request->to_string().PHP_EOL.PHP_EOL.PHP_EOL;
+//		$data=print_r($request, true);
+//		echo $data;
+//		die('end');
 	}
 	catch(\Exception $e) {
 		die("ERROR:".$e->getMessage()."\n");

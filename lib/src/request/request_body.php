@@ -20,6 +20,21 @@ class request_body {
 			return $this->name;
 	}
 
+	public function to_string($_separator) {
+
+		$headers='';
+		foreach($this->headers as $k => $v) {
+			$headers.=$k.':'.$v.PHP_EOL;
+		}
+
+		return <<<R
+{$_separator}
+{$headers}
+{$this->body}
+
+R;
+	}
+
 	public function __construct($_b, array $_h) {
 		$this->body=$_b;
 		$this->headers=$_h;
