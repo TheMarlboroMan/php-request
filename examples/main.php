@@ -36,6 +36,9 @@ R;
 else {
 	try {
 
+		setcookie ("A-cookie", "With a value", time()+120, '/');
+		setcookie ("Some-other-cookie", "With;some;other;value", time()+120, '/');
+		setcookie ("The-third-cookie", "With;loads=of;crap", time()+120, '/');
 		$request=request\request_factory::from_apache_request();
 
 		$data=print_r($request, true);

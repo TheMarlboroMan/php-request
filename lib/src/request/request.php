@@ -11,13 +11,13 @@ abstract class request {
 
 	public abstract function 	is_multipart();
 
-	//TODO: Add cookies... They come from the headers, you know.
 	private	$status=null;
 	private	$method=null;
 	private $uri=null;
 	private $query_string=null;
 	private $query_string_form=null;
 	private	$headers=null;
+	private	$cookies=null;
 
 	public function		get_method() {
 		return $this->method;
@@ -66,6 +66,15 @@ abstract class request {
 		return $this->query_string_form;
 	}
 
+	//!Attempts to retrieve $_key from a urlencoded query string. Returns
+	//!$_default if not possible.
+	public function		query($_key, $_default=null) {
+
+		$data=$this->get_query_string_form();
+		return isset($data[$_key]) ? $data[$_key] : $_default;
+
+	}
+
 	protected function 	__construct($_method, $_uri, $_query_string, $_protocol, array $_headers) {
 
 		$this->method=$_method;
@@ -73,6 +82,22 @@ abstract class request {
 		$this->query_string=$_query_string;
 		$this->status="{$_method} {$_uri} {$_protocol}";
 		$this->headers=$_headers;
-		//TODO: Cookies!.
+		$this->cookies=[];
+
+		//TODO: Mind the casing!.
+		if(isset($this->headers['Cookie'])) {
+			$this->load_cookies($this->headers['Cookie']);
+		}
+
+	}
+
+	private function load_cookies($_raw_cookie_string) {
+
+		$this->cookies=array_reduce(explode(';', $_raw_cookie_string), function($_carry, $_item) {
+
+			list($key, $value)=explode('=', $_item);
+			$_carry[trim($key)]=trim(urldecode($value));
+			return $_carry;
+		}, []);
 	}
 };
