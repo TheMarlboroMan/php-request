@@ -35,7 +35,12 @@ class urlencoded_request extends request {
 	public function					data($_key, $_default=null) {
 
 		$data=$this->get_body_form();
-		return isset($data[$_key]) ? $data[$_key] : $_default;
+		return $this->has_data($_key) ? $data[$_key] : $_default;
+	}
+
+	public function					has_data($_key) {
+
+		return isset($this->get_body_form()[$_key]);
 	}
 
 	protected function				body_to_string() {

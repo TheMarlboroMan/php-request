@@ -72,8 +72,12 @@ abstract class request {
 	public function						query($_key, $_default=null) {
 
 		$data=$this->get_query_string_form();
-		return isset($data[$_key]) ? $data[$_key] : $_default;
+		return $this->has_query($_key) ? $data[$_key] : $_default;
+	}
 
+	public function						has_query($_key) {
+
+		return isset($this->get_query_string_form()[$_key]);
 	}
 
 	public function						to_string() {
