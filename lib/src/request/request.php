@@ -113,10 +113,10 @@ abstract class request {
 		return null!==$this->cookies && isset($this->cookies[$_key]);
 	}
 
-	//Returns the given cookie. Throws if not present.
-	public function						cookie($_key) {
+	//Returns the given cookie.
+	public function						cookie($_key, $_default=null) {
 		if(!$this->has_cookie($_key)) {
-			throw new cookie_does_not_exist_exception($_key);
+			return $_default;			
 		}
 		return $this->cookies[$_key];
 	}
