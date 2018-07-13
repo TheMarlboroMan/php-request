@@ -23,7 +23,7 @@ if(!isset($_POST['userid'])) {
 		<input type="submit" />
 	</form>
 
-	<h1>Send this to localhost:10000 (lc -l localhost 10000)</h1>
+	<h1>Send this to localhost:10000 (nc -l localhost 10000)</h1>
 	<form method="POST" action="http://localhost:10000" enctype="multipart/form-data">
 		<input type="text" name="userid" value="1" />
 		<input type="text" name="filecomment" value="This is an image file" />
@@ -41,7 +41,7 @@ else {
 		setcookie ("The-third-cookie", "With;loads=of;crap", time()+120, '/');
 		$request=request\request_factory::from_apache_request();
 
-		echo $request->has_data('filecomment').' lalala'.PHP_EOL;
+		echo $request->has_body('filecomment').' lalala'.PHP_EOL;
 		echo $request->to_string().PHP_EOL.PHP_EOL.PHP_EOL;
 //		$data=print_r($request, true);
 //		echo $data;

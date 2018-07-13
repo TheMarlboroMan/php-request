@@ -67,7 +67,7 @@ class multipart_request extends request {
 
 	protected function		body_to_string() {
 
-		$boundary=raw_request_body_tools::boundary_from_content_type_header($this->get_header('Content-Type'));
+		$boundary=raw_request_body_tools::boundary_from_content_type_header($this->header('Content-Type'));
 
 		$bodies=array_reduce($this->bodies, function($_carry, request_body $_item) use ($boundary) {
 

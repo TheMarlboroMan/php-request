@@ -18,10 +18,14 @@ class urlencoded_request extends request {
 		return false;
 	}
 
+	//Body manipulation.
+
+	//!Returns the full body.
 	public function					get_body() {
 		return $this->body;
 	}
 
+	//!Returns the full body as an array.
 	public function 				get_body_form() {
 
 		//TODO: Should throw if not parseable.
@@ -32,13 +36,15 @@ class urlencoded_request extends request {
 		return $this->body_form;
 	}
 
-	public function					data($_key, $_default=null) {
+	//!Returns the given body key, $_default if not present.
+	public function					body($_key, $_default=null) {
 
 		$data=$this->get_body_form();
-		return $this->has_data($_key) ? $data[$_key] : $_default;
+		return $this->has_body($_key) ? $data[$_key] : $_default;
 	}
 
-	public function					has_data($_key) {
+	//!Checks if the given body key exists.
+	public function					has_body($_key) {
 
 		return isset($this->get_body_form()[$_key]);
 	}
