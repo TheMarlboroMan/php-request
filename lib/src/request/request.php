@@ -116,16 +116,16 @@ abstract class request {
 	//Returns the given cookie.
 	public function						cookie($_key, $_default=null) {
 		if(!$this->has_cookie($_key)) {
-			return $_default;			
+			return $_default;
 		}
 		return $this->cookies[$_key];
 	}
 
 	//!Sets the given cookie. Does not affect superglobals. Will have an
 	//!effect on future requests.
-	public function						set_cookie($_key, $_value, $_expiration_seconds) {
+	public function						set_cookie($_key, $_value, $_expiration_seconds, $_path) {
 
-		setcookie($_key, $_value, time()+$_expiration_seconds);
+		setcookie($_key, $_value, time()+$_expiration_seconds, $_path);
 		if($this->has_cookie($_key)) {
 			$this->cookies[$_key]=$_value;
 		}
