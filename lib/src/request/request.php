@@ -21,6 +21,7 @@ abstract class request {
 	private								$status=null;
 	private								$method=null;
 	private 							$uri=null;
+	private 							$protocol=null;
 	private 							$query_string=null;
 	private 							$query_string_form=null;
 	private								$headers=null;
@@ -35,6 +36,11 @@ abstract class request {
 	//!Returns the request URI
 	public function						get_uri() {
 		return $this->uri;
+	}
+
+	//!Returns the request URI
+	public function						get_protocol() {
+		return $this->protocol;
 	}
 
 	//!Returns the request URI without the query string attached.
@@ -164,6 +170,7 @@ R;
 
 		$this->method=$_method;
 		$this->uri=$_uri;
+		$this->protocol=$_protocol;
 		$this->query_string=$_query_string;
 		$this->status="{$_method} {$_uri} {$_protocol}";
 		$this->headers=$_headers;
