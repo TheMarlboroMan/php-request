@@ -19,7 +19,9 @@ class request_body {
 	public function get_name() {
 			return $this->name;
 	}
-
+	public function get_body(){
+			return $this->body;
+	}
 	public function to_string($_separator) {
 
 		$headers='';
