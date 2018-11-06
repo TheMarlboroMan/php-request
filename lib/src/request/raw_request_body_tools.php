@@ -3,9 +3,21 @@ namespace request;
 
 class raw_request_body_tools {
 
+	const					win_line_feed="\r\n";
+	const					unix_line_feed="\n";
+
+	//!Stupid fetch will lowercase all headers.
+	public static function	get_content_type(array $_headers) {
+
+		return isset($_headers['Content-Type'])
+			? $_headers['Content-Type']
+			: (isset($_headers['content-type'])
+				? $_headers['content-type']
+				: null);
+	}
+
 	public static function	boundary_from_content_type_header($_header) {
 
-		//TODO: Mind the letter casing.
 		//Lol... Explode the header by ;, the second part is the boundary=xxxx part. Explode that by = and return the second part.
 		return 	trim(explode('=', explode(';',$_header, 2)[1])[1]);
 	}
@@ -13,7 +25,11 @@ class raw_request_body_tools {
 	//!Converts the post and files superglobals into their original raw forms.
 	public static function raw_body_from_php_parsed_data(array $_post, array $_files, array $_headers) {
 
-		$boundary=raw_request_body_tools::boundary_from_content_type_header($_headers['Content-Type']);
+		$content_type=raw_request_body_tools::get_content_type($_headers);
+		if(null===$content_type) {
+				throw new request_exception("Could not find content-type header in headers when parsing raw body raw_request_body_tools::raw_body_from_php_parsed_data");
+		}
+		$boundary=raw_request_body_tools::boundary_from_content_type_header($content_type);
 
 		//First the post data...
 		$post_data=null;
@@ -59,13 +75,14 @@ R;
 
 		$end_boundary=$_boundary.'--';
 		$current_body='';
-
-		$tk=new string_tokenizer($_body, PHP_EOL);
+		$_body=str_replace(self::win_line_feed,self::unix_line_feed,$_body);
+		$tk=new string_tokenizer($_body, self::unix_line_feed);
 
 		while(!$tk->is_done()) {
 			$line=$tk->next();
 
 			if($_boundary==$line) {
+
 				if(strlen($current_body)) {
 					$_bodies[]=self::request_body_from_raw_part($current_body);
 					$current_body='';
@@ -76,13 +93,14 @@ R;
 				break;
 			}
 
-			$current_body.=$line.PHP_EOL;
+			$current_body.=$line.self::unix_line_feed;
 		}
 	}
 
 	public static function	request_body_from_raw_part($_raw) {
 
-		$tk=new string_tokenizer($_raw, PHP_EOL);
+		$_raw=str_replace(self::win_line_feed,self::unix_line_feed,$_raw);
+		$tk=new string_tokenizer($_raw, self::unix_line_feed);
 
 		//Discard the first line.
 		$line=$tk->next();
@@ -108,7 +126,7 @@ R;
 				break;
 			}
 
-			$body.=PHP_EOL;
+			$body.=self::unix_line_feed;
 		}
 
 		return new request_body($body, $headers);

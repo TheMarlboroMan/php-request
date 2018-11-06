@@ -20,7 +20,12 @@ class multipart_request extends request {
 	public function 		__construct($_method, $_uri, $_query_string, $_protocol, array $_headers, $_body) {
 
 		parent::__construct($_method, $_uri, $_query_string, $_protocol, $_headers);
-		raw_request_body_tools::parse_multipart_bodies($this->bodies, $_body, raw_request_body_tools::boundary_from_content_type_header($_headers['Content-Type']));
+
+		$content_type_header=raw_request_body_tools::get_content_type($_headers);
+		if(null===$content_type_header) {
+			throw new request_exception("invalid request to multipart_request constructor: content-type header not found");
+		}
+		raw_request_body_tools::parse_multipart_bodies($this->bodies, $_body, raw_request_body_tools::boundary_from_content_type_header($content_type_header));
 	}
 
 	public function 		is_multipart() {
@@ -67,7 +72,11 @@ class multipart_request extends request {
 
 	protected function		body_to_string() {
 
-		$boundary=raw_request_body_tools::boundary_from_content_type_header($this->header('Content-Type'));
+		$content_type_header=raw_request_body_tools::get_content_type($this->get_headers());
+		if(null===$content_type_header) {
+			throw new request_exception("multipart_request::body_to_string cannot find content-type header");
+		}
+		$boundary=raw_request_body_tools::boundary_from_content_type_header($content_type_header);
 
 		$bodies=array_reduce($this->bodies, function($_carry, request_body $_item) use ($boundary) {
 
