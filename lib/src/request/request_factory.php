@@ -28,7 +28,8 @@ class request_factory {
 
 		$headers=getallheaders();
 		$method=$_SERVER['REQUEST_METHOD'];
-		$uri=$_SERVER['REQUEST_URI'];
+		$uri_host=isset($headers['Host']) ? $headers['Host'] : '';
+		$uri=$uri_host.$_SERVER['REQUEST_URI'];
 		$query_string=$_SERVER['QUERY_STRING'];
 		$protocol=$_SERVER['SERVER_PROTOCOL'];
 		$body=self::can_get_body_from_input($headers, $method) ?
