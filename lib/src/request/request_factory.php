@@ -31,7 +31,13 @@ class request_factory {
 		$uri_host=isset($headers['Host']) ? $headers['Host'] : '';
 		$protocol=$_SERVER['SERVER_PROTOCOL'];
 		$scheme=$_SERVER['REQUEST_SCHEME'];
+		$scheme=isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : null;
+		if(!$scheme) {
+		    $scheme=isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off' ? 'https' : 'http';
+		}
+
 		$uri=$scheme.'://'.$uri_host.$_SERVER['REQUEST_URI'];
+
 		$query_string=$_SERVER['QUERY_STRING'];
 
 		$body=self::can_get_body_from_input($headers, $method) ?
