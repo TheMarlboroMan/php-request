@@ -1,9 +1,6 @@
 <?php
 namespace request;
 
-class request_exception_no_cli extends request_exception {
-	public function __construct() {parent::__construct("cannot create web request in cli mode.");}
-};
 
 //https://stackoverflow.com/questions/41427359/phpunit-getallheaders-not-work/4142872
 if (!function_exists('getallheaders')) {
@@ -23,7 +20,7 @@ class request_factory {
 	public static function	from_apache_request() {
 
 		if(php_sapi_name()=="cli") {
-			throw new request_exception_no_cli;
+			throw new no_source_exception;
 		}
 
 		$headers=getallheaders();

@@ -27,7 +27,7 @@ class raw_request_body_tools {
 
 		$content_type=raw_request_body_tools::get_content_type($_headers);
 		if(null===$content_type) {
-				throw new request_exception("Could not find content-type header in headers when parsing raw body raw_request_body_tools::raw_body_from_php_parsed_data");
+				throw new exception("Could not find content-type header in headers when parsing raw body raw_request_body_tools::raw_body_from_php_parsed_data");
 		}
 		$boundary=raw_request_body_tools::boundary_from_content_type_header($content_type);
 

@@ -1,18 +1,6 @@
 <?php
 namespace request;
 
-class request_header_does_not_exist_exception extends request_exception {
-	public function __construct($_key) {
-		parent::__construct("header ".$_key." does not exist");
-	}
-};
-
-class cookie_does_not_exist_exception extends request_exception {
-	public function __construct($_key) {
-		parent::__construct("cookie ".$_key." does not exist");
-	}
-};
-
 abstract class request {
 
 	public abstract function 			is_multipart();
@@ -71,7 +59,7 @@ abstract class request {
 	//!Returns the given header. Throws if not present.
 	public function						header($_key) {
 		if(!$this->has_header($_key)) {
-			throw new request_header_does_not_exist_exception($_key);
+			throw new header_does_not_exist_exception($_key);
 		}
 		return $this->headers[$_key];
 	}
@@ -193,8 +181,11 @@ R;
 		$this->raw_cookies=$_raw_cookie_string;
 		$this->cookies=array_reduce(explode(';', $this->raw_cookies), function($_carry, $_item) {
 
-			list($key, $value)=explode('=', $_item);
-			$_carry[trim($key)]=trim(urldecode($value));
+			if(false!==strpos($_item, '=')) {
+				list($key, $value)=explode('=', $_item);
+				$_carry[trim($key)]=trim(urldecode($value));
+			}
+
 			return $_carry;
 		}, []);
 	}
