@@ -66,13 +66,17 @@ class multipart_request extends request {
 		}
 
 		$boundary=raw_request_body_tools::boundary_from_content_type_header($content_type_header);
+		$reduce=function($_carry, $_item) use ($boundary, &$reduce) {
 
-		$bodies=array_reduce($this->bodies, function($_carry, request_body $_item) use ($boundary) {
+			if(is_array($_item)) {
+				return $_carry.=array_reduce($_item, $reduce, '');
+			}
+			else {
+				return $_carry.=$_item->to_string($boundary);
+			}
+		};
 
-			$_carry.=$_item->to_string($boundary);
-			return $_carry;
-		}, '');
-
+		$bodies=array_reduce($this->bodies, $reduce, '');
 		return $bodies.$boundary.'--';
 	}
 };
