@@ -32,21 +32,11 @@ class raw_request_body_tools {
 		$boundary=raw_request_body_tools::boundary_from_content_type_header($content_type);
 
 		//First the post data...
-		$post_data=null;
-		foreach($_post as $k => $v) {
-			$post_data.=<<<R
-{$boundary}
-Content-Disposition: form-data; name="{$k}"
-
-{$v}
-
-R;
-		}
+		$post_data=self::reduce_array($_post, $boundary);
 
 		//TODO: What about invalid files???
 		//TODO: Try sending an empty file!.
 		//TODO: There should be an option to be a little less hardcore, like just grab $_FILES.
-
 		$file_data=null;
 		foreach($_files as $k => $v) {
 
@@ -69,6 +59,29 @@ R;
 		return <<<R
 {$post_data}{$file_data}{$boundary}--
 R;
+	}
+
+	private static function reduce_array($_data, $_boundary, $_key_name=null) {
+
+		foreach($_data as $k => $v) {	
+			if(is_array($v)) {
+				//TODO: What if these keys are named???
+				$result.=self::reduce_array($v, $_boundary, $k.'[]');
+			}
+			else {
+
+				$name=null!==$_key_name ? $_key_name : $k;
+				$result.=<<<R
+{$_boundary}
+Content-Disposition: form-data; name="{$name}"
+
+{$v}
+
+R;
+			}			
+		}
+
+		return $result;
 	}
 
 	public static function	parse_multipart_bodies(array &$_bodies, $_body, $_boundary) {
