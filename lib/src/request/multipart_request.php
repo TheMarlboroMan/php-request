@@ -37,23 +37,14 @@ class multipart_request extends request {
 
 	public function			body_name_exists($_name) {
 
-		foreach($this->bodies as $k => $v) {
-			if($v->get_name() == $_name) {
-				return true;
-			}
-		}
-
-		return false;
+		return isset($this->bodies[$_name]);
 	}
 
 	public function			get_body_by_name($_name) {
 
-		foreach($this->bodies as $k => $v) {
-			if($v->get_name() == $_name) {
-				return $v;
-			}
+		if(isset($this->bodies[$_name])) {
+			return $this->bodies[$_name];
 		}
-		
 		throw new body_name_not_found_exception($_name);
 	}
 
