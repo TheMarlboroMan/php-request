@@ -106,7 +106,7 @@ R;
 				$_bodies[$name][]=$body;
 			}
 			else {
-				$_bodies[]=$body;
+				$_bodies[$name]=$body;
 			}
 			
 		};
