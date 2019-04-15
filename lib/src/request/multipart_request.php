@@ -67,13 +67,13 @@ class multipart_request extends request {
 		return $this->bodies[$_index];
 	}
 
-	protected function		body_to_string() {
+	public function		body_to_string() {
 
 		$content_type_header=raw_request_body_tools::get_content_type($this->get_headers());
 		if(null===$content_type_header) {
 			throw new exception("multipart_request::body_to_string cannot find content-type header");
 		}
-		
+
 		$boundary=raw_request_body_tools::boundary_from_content_type_header($content_type_header);
 
 		$bodies=array_reduce($this->bodies, function($_carry, request_body $_item) use ($boundary) {
