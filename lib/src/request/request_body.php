@@ -39,17 +39,17 @@ class request_body {
 R;
 	}
 
-	public function __construct($_b, array $_h) {
+	public function __construct($_b, array $_h, &$_named_as_array) {
 		$this->body=$_b;
 		$this->headers=$_h;
 
 		//TODO: Mind casing...
 		if(isset($this->headers['Content-Disposition'])) {
-			$this->parse_content_disposition_header($this->headers['Content-Disposition']);
+			$this->parse_content_disposition_header($this->headers['Content-Disposition'], $_named_as_array);
 		}
 	}
 
-	private function parse_content_disposition_header($_value) {
+	private function parse_content_disposition_header($_value, &$_named_as_array) {
 
 		$find_value=function($_str, $_find) {
 			$pos=strpos($_str, $_find);
@@ -62,6 +62,11 @@ R;
 		};
 
 		$this->name=$find_value($_value, ' name="');
+		if("[]"==substr($this->name, -2)) {
+			$_named_as_array=true;
+			$this->name=substr($this->name, 0, -2);
+		}
+
 		$this->filename=$find_value($_value, ' filename="');
 	}
 }

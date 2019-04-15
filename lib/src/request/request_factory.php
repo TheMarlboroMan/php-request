@@ -21,6 +21,7 @@ class request_factory {
 
 		if(php_sapi_name()=="cli") {
 			throw new no_source_exception;
+			throw new no_source_exception;
 		}
 
 		$headers=getallheaders();

@@ -91,18 +91,36 @@ R;
 		$_body=str_replace(self::win_line_feed,self::unix_line_feed,$_body);
 		$tk=new string_tokenizer($_body, self::unix_line_feed);
 
+		$add_body=function() use (&$current_body, &$_bodies) {
+			
+			$named_as_array=false;
+			$body=self::request_body_from_raw_part($current_body, $named_as_array);
+			$current_body='';
+
+			//A body can be an array, so we need its name too.
+			$name=$body->get_name();
+			if($named_as_array) {
+				if(!isset($_bodies[$name])) {
+					$_bodies[$name]=array();
+				}
+				$_bodies[$name][]=$body;
+			}
+			else {
+				$_bodies[]=$body;
+			}
+			
+		};
+
 		while(!$tk->is_done()) {
 			$line=$tk->next();
 
 			if($_boundary==$line) {
-
 				if(strlen($current_body)) {
-					$_bodies[]=self::request_body_from_raw_part($current_body);
-					$current_body='';
+					$add_body();
 				}
 			}
 			else if($end_boundary==$line) {
-				$_bodies[]=self::request_body_from_raw_part($current_body);
+				$add_body();
 				break;
 			}
 
@@ -110,7 +128,7 @@ R;
 		}
 	}
 
-	public static function	request_body_from_raw_part($_raw) {
+	public static function	request_body_from_raw_part($_raw, &$_named_as_array) {
 
 		$_raw=str_replace(self::win_line_feed,self::unix_line_feed,$_raw);
 		$tk=new string_tokenizer($_raw, self::unix_line_feed);
@@ -142,6 +160,6 @@ R;
 			$body.=self::unix_line_feed;
 		}
 
-		return new request_body($body, $headers);
+		return new request_body($body, $headers, &$_named_as_array);
 	}
 }
