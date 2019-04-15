@@ -160,6 +160,6 @@ R;
 			$body.=self::unix_line_feed;
 		}
 
-		return new request_body($body, $headers, &$_named_as_array);
+		return new request_body($body, $headers, $_named_as_array);
 	}
 }
