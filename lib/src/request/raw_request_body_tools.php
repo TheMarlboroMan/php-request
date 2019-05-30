@@ -63,6 +63,8 @@ R;
 
 	private static function reduce_array($_data, $_boundary, $_key_name=null) {
 
+		$result='';
+
 		foreach($_data as $k => $v) {	
 			if(is_array($v)) {
 				//TODO: What if these keys are named???
