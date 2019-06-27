@@ -55,7 +55,8 @@ class multipart_request extends request {
 			throw new body_index_out_of_bounds_exception($_index, $this->count());
 		}
 
-		return $this->bodies[$_index];
+		$keys=array_keys($this->bodies);
+		return $this->bodies[$keys[$_index]];
 	}
 
 	public function		body_to_string() {
