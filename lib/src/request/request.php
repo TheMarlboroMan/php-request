@@ -6,15 +6,22 @@ abstract class request {
 	public abstract function 			is_multipart();
 	protected abstract function			body_to_string();
 
-	private								$status=null;
-	private								$method=null;
-	private 							$uri=null;
-	private 							$protocol=null;
-	private 							$query_string=null;
-	private 							$query_string_form=null;
-	private								$headers=null;
-	private								$raw_cookies=null;
-	private								$cookies=null;
+	private								$status=0;
+	private								$method="";
+	private 							$uri="";
+	private 							$protocol="";
+	private 							$query_string="";
+	private 							$query_string_form=[];
+	private								$headers=[];
+	private								$raw_cookies="";
+	private								$cookies=[];
+	private                             $ip="";
+
+	//!Returns the request client ip.
+	public function                     get_ip() {
+
+		return $this->ip;
+	}
 
 	//!Returns the request method.
 	public function						get_method() {
@@ -48,11 +55,13 @@ abstract class request {
 
 	//!Returns true if the headers contain the given key.
 	public function 					has_header($_key) {
-		return isset($this->headers[$_key]);
+
+		return array_key_exists($_key, $this->headers);
 	}
 
 	//!Returns the array of headers.
 	public function						get_headers() {
+
 		return $this->headers;
 	}
 
@@ -62,6 +71,12 @@ abstract class request {
 			throw new header_does_not_exist_exception($_key);
 		}
 		return $this->headers[$_key];
+	}
+
+	//!Convenience alias.
+	public function						get_header($_key) {
+
+		return $this->header($_key);
 	}
 
 //Query string manipulation....
@@ -75,6 +90,7 @@ abstract class request {
 	public function 					get_query_string_form() {
 
 		if(null==$this->query_string_form) {
+
 			parse_str($this->query_string, $this->query_string_form);
 		}
 		return $this->query_string_form;
@@ -99,20 +115,28 @@ abstract class request {
 
 	//!Returns the raw query string.
 	public function						get_raw_cookies() {
-		return $this->raw_cookies();
+		return $this->raw_cookies;
 	}
 
 	//!Returns true if the cookie exists.
 	public function						has_cookie($_key) {
-		return null!==$this->cookies && isset($this->cookies[$_key]);
+
+		return is_array($this->cookies) && array_key_exists($_key, $this->cookies);
 	}
 
 	//Returns the given cookie.
 	public function						cookie($_key, $_default=null) {
+
 		if(!$this->has_cookie($_key)) {
 			return $_default;
 		}
 		return $this->cookies[$_key];
+	}
+
+	//!Convenience alias.
+	public function                     get_cookie($_key, $_default=null) {
+
+		return $this->cookie($_key, $_default);
 	}
 
 	//!Sets the given cookie. Does not affect superglobals. Will have an
@@ -154,8 +178,16 @@ abstract class request {
 R;
 	}
 
-	protected function 					__construct($_method, $_uri, $_query_string, $_protocol, array $_headers) {
+	protected function 					__construct(
+		/*string*/ $_ip,
+		/*string*/ $_method,
+		/*string*/ $_uri,
+		/*string*/ $_query_string,
+		/*string*/ $_protocol,
+		array $_headers
+	) {
 
+		$this->ip=$_ip;
 		$this->method=$_method;
 		$this->uri=$_uri;
 		$this->protocol=$_protocol;

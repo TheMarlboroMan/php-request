@@ -7,9 +7,9 @@ class urlencoded_request extends request {
 	private							$body=null;
 	private 						$body_form=null;
 
-	public function 				__construct($_method, $_uri, $_query_string, $_protocol, array $_headers, $_body) {
+	public function 				__construct($_ip, $_method, $_uri, $_query_string, $_protocol, array $_headers, $_body) {
 
-		parent::__construct($_method, $_uri, $_query_string, $_protocol, $_headers);
+		parent::__construct($_ip, $_method, $_uri, $_query_string, $_protocol, $_headers);
 		$this->body=$_body;
 	}
 

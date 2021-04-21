@@ -41,7 +41,8 @@ else {
 		setcookie ("The-third-cookie", "With;loads=of;crap", time()+120, '/');
 		$request=request\request_factory::from_apache_request();
 
-		echo $request->has_body('filecomment').' lalala'.PHP_EOL;
+		echo "from:".$request->get_ip().PHP_EOL;
+		echo $request->body_name_exists('filecomment').' lalala'.PHP_EOL;
 		echo $request->to_string().PHP_EOL.PHP_EOL.PHP_EOL;
 //		$data=print_r($request, true);
 //		echo $data;

@@ -7,9 +7,9 @@ class multipart_request extends request {
 
 	private 				$bodies=[];	//Multiple body parts, you see...
 
-	public function 		__construct($_method, $_uri, $_query_string, $_protocol, array $_headers, $_body) {
+	public function 		__construct($_ip, $_method, $_uri, $_query_string, $_protocol, array $_headers, $_body) {
 
-		parent::__construct($_method, $_uri, $_query_string, $_protocol, $_headers);
+		parent::__construct($_ip, $_method, $_uri, $_query_string, $_protocol, $_headers);
 
 		$content_type_header=raw_request_body_tools::get_content_type($_headers);
 		if(null===$content_type_header) {
@@ -37,15 +37,17 @@ class multipart_request extends request {
 
 	public function			body_name_exists($_name) {
 
-		return isset($this->bodies[$_name]);
+		return array_key_exists($_name, $this->bodies);
 	}
 
 	public function			get_body_by_name($_name) {
 
-		if(isset($this->bodies[$_name])) {
-			return $this->bodies[$_name];
+		if(!$this->body_name_exists($_name)) {
+
+			throw new body_name_not_found_exception($_name);
 		}
-		throw new body_name_not_found_exception($_name);
+
+		return $this->bodies[$_name];
 	}
 
 	public function			get_body_by_index($_index) {

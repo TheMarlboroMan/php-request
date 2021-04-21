@@ -28,8 +28,10 @@ class request_factory {
 		$method=$_SERVER['REQUEST_METHOD'];
 		$uri_host=isset($headers['Host']) ? $headers['Host'] : '';
 		$protocol=$_SERVER['SERVER_PROTOCOL'];
-		$scheme=$_SERVER['REQUEST_SCHEME'];
 		$scheme=isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : null;
+		$ip=self::extract_ip();
+
+
 		if(!$scheme) {
 		    $scheme=isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off' ? 'https' : 'http';
 		}
@@ -43,8 +45,8 @@ class request_factory {
 					raw_request_body_tools::raw_body_from_php_parsed_data($_POST, $_FILES, $headers);
 
 		return self::is_multipart($headers) ?
-				new multipart_request($method, $uri, $query_string, $protocol, $headers, $body) :
-				new urlencoded_request($method, $uri, $query_string, $protocol, $headers, $body);
+				new multipart_request($ip, $method, $uri, $query_string, $protocol, $headers, $body) :
+				new urlencoded_request($ip, $method, $uri, $query_string, $protocol, $headers, $body);
 	}
 
 	private static function	is_multipart($_headers) {
@@ -58,5 +60,18 @@ class request_factory {
 
 		$header_value=raw_request_body_tools::get_content_type($_headers);
 		return ! ('POST'===strtoupper($_method) && null!==$header_value && false!==strpos($header_value, 'multipart/form-data'));
+	}
+
+	private static function extract_ip() {
+
+		foreach(["HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"] as $key) {
+
+			if(isset($_SERVER[$key]) && strlen($_SERVER[$key])) {
+
+				return $_SERVER[$key];
+			}
+		}
+
+		return "???";
 	}
 }
