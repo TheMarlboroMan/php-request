@@ -15,6 +15,11 @@ class request_body {
 	public function get_filename() {
 		return $this->filename;
 	}
+	
+	public function get_headers() {
+	
+		return $this->headers;
+	}
 
 	public function get_name() {
 			return $this->name;
