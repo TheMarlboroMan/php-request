@@ -23,6 +23,12 @@ class string_tokenizer {
 	public function next() {
 
 		$result='';
+		
+		//Takes care of empty strings.
+		if($this->last_index < 0) {
+		
+			return $result;
+		}
 
 		while(true) {
 
