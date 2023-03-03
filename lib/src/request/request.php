@@ -77,7 +77,7 @@ abstract class request {
 *transforms the casing of the headers so their names are lowercased
 *@return void
 */
-	public function header_casing() {
+	public function set_header_casing() {
 		
 		$this->headers=array_change_key_case($this->headers);
 	}
