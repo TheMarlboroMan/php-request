@@ -13,6 +13,7 @@ abstract class request {
 	private 							$query_string="";
 	private 							$query_string_form=[];
 	private								$headers=[];
+	private								$ci_headers_to_headers_map=[];
 	private								$raw_cookies="";
 	private								$cookies=[];
 	private                             $ip="";
@@ -56,7 +57,8 @@ abstract class request {
 	//!Returns true if the headers contain the given key.
 	public function 					has_header($_key) {
 
-		return array_key_exists($_key, $this->headers);
+		$lckey=strtolower($_key);
+		return array_key_exists($lckey, $this->ci_headers_to_headers_map);
 	}
 
 	//!Returns the array of headers.
@@ -67,10 +69,14 @@ abstract class request {
 
 	//!Returns the given header. Throws if not present.
 	public function						header($_key) {
-		if(!$this->has_header($_key)) {
+
+		$lckey=strtolower($_key);
+		if(!$this->has_header($lckey)) {
 			throw new header_does_not_exist_exception($_key);
 		}
-		return $this->headers[$_key];
+
+		$key=$this->ci_headers_to_headers_map[$lckey];
+		return $this->headers[$key];
 	}
 
 /**
@@ -217,6 +223,10 @@ R;
 			$this->load_cookies($this->headers['Cookie']);
 		}
 
+		foreach($this->headers as $key => $value) {
+
+			$this->ci_headers_to_headers_map[strtolower($key)]=$key;
+		}
 	}
 
 	private function					rebuild_raw_cookie_string() {
