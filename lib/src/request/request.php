@@ -70,13 +70,22 @@ abstract class request {
 	//!Returns the given header. Throws if not present.
 	public function						header($_key) {
 
+			//!Returns the given header. Throws if not present.
+	public function						header($_key) {
+
+		if($this->has_header($_key)) {
+
+			return $this->headers[$_key];
+		}
+
 		$lckey=strtolower($_key);
 		if(!$this->has_header($lckey)) {
+
 			throw new header_does_not_exist_exception($_key);
 		}
 
-		$key=$this->ci_headers_to_headers_map[$lckey];
-		return $this->headers[$key];
+//		$key=$this->ci_headers_to_headers_map[$lckey];
+		return $this->headers($lckey);
 	}
 
 /**
