@@ -70,9 +70,6 @@ abstract class request {
 	//!Returns the given header. Throws if not present.
 	public function						header($_key) {
 
-			//!Returns the given header. Throws if not present.
-	public function						header($_key) {
-
 		if($this->has_header($_key)) {
 
 			return $this->headers[$_key];
