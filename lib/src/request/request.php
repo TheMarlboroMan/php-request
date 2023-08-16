@@ -174,11 +174,11 @@ abstract class request {
 		$this->rebuild_raw_cookie_string();
 	}
 
-	//!Sets the given cookie. Does not affect superglobals. Will have an
+	//!Removes the given cookie. Does not affect superglobals. Will have an
 	//!effect on future requests.
 	public function						unset_cookie($_key) {
 
-		setcookie($_key, null, time());
+		setcookie($_key, "", time());
 		if($this->has_cookie($_key)) {
 			unset($this->cookies[$_key]);
 		}
