@@ -80,15 +80,6 @@ abstract class request {
 		return $this->headers[$key];
 	}
 
-/**
-*transforms the casing of the headers so their names are lowercased
-*@return void
-*/
-	public function set_header_casing() {
-		
-		$this->headers=array_change_key_case($this->headers);
-	}
-	
 	//!Convenience alias.
 	public function						get_header($_key) {
 
