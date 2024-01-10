@@ -148,16 +148,20 @@ abstract class request {
 
 /**
 *Sets the given cookie. Does not affect superglobals. Will have an
-*effect on future requests.
+*effect on future requests. Set -1 to expiration seconds for a session cookie.
 *@param string $_key
 *@param string $_value
 *@param int $_expiration_seconds
 *@param string $_path
 *@param string $_domain
 */
-	public function						set_cookie($_key, $_value, $_expiration_seconds, $_path="", $_domain="") {
+	public function						set_cookie($_key, $_value, $_expiration_seconds=0, $_path="", $_domain="") {
 
-		setcookie($_key, $_value, time()+$_expiration_seconds, $_path, $_domain);
+		$expiration_seconds=-1===$_expiration_seconds
+			? 0
+			: time()+$_expiration_seconds;
+
+		setcookie($_key, $_value, $expiration_seconds, $_path, $_domain);
 		if($this->has_cookie($_key)) {
 			$this->cookies[$_key]=$_value;
 		}
