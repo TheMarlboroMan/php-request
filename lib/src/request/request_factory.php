@@ -17,10 +17,13 @@ if (!function_exists('getallheaders')) {
 
 class request_factory {
 
+/**
+*@return request
+*/
 	public static function	from_apache_request() {
 
 		if(php_sapi_name()=="cli") {
-			throw new no_source_exception;
+			
 			throw new no_source_exception;
 		}
 
@@ -49,6 +52,10 @@ class request_factory {
 				new urlencoded_request($ip, $method, $uri, $query_string, $protocol, $headers, $body);
 	}
 
+/**
+*@param array<string, string> $_headers
+*@return bool
+*/
 	private static function	is_multipart($_headers) {
 
 			$header_value=raw_request_body_tools::get_content_type($_headers);
@@ -62,6 +69,9 @@ class request_factory {
 		return ! ('POST'===strtoupper($_method) && null!==$header_value && false!==strpos($header_value, 'multipart/form-data'));
 	}
 
+/**
+*@return string
+*/
 	private static function extract_ip() {
 
 		foreach(["HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"] as $key) {
