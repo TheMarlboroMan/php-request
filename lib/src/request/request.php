@@ -3,22 +3,38 @@ namespace request;
 
 abstract class request {
 
+	/** @return bool */
 	public abstract function 			is_multipart();
+	/** @return string */
 	protected abstract function			body_to_string();
 
-	private								$status=0;
-	private								$method="";
-	private 							$uri="";
-	private 							$protocol="";
-	private 							$query_string="";
-	private 							$query_string_form=[];
-	private								$headers=[];
-	private								$ci_headers_to_headers_map=[];
-	private								$raw_cookies="";
-	private								$cookies=[];
-	private                             $ip="";
+	/** @var int */
+	private	$status=0;
+	/** @var string */
+	private	$method="";
+	/** @var string */
+	private $uri="";
+	/** @var string */
+	private $protocol="";
+	/** @var string */
+	private $query_string="";
+	/** @var array<string,string> */
+	private $query_string_form=[];
+	/** @var array<string,string> */
+	private	$headers=[];
+	/** @var array<string,string> */
+	private	$ci_headers_to_headers_map=[];
+	/** @var string */
+	private	$raw_cookies="";
+	/** @var array<string,string> */
+	private	$cookies=[];
+	/** @var string */
+	private $ip="";
 
-	//!Returns the request client ip.
+/**
+*@return string
+*Returns the request client ip.
+*/
 	public function                     get_ip() {
 
 		return $this->ip;
