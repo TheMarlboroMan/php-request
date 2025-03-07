@@ -18,8 +18,8 @@ abstract class request {
 	private $protocol="";
 	/** @var string */
 	private $query_string="";
-	/** @var array<string,string> */
-	private $query_string_form=[];
+	/** @var ?array<string,string> */
+	private $query_string_form=null;
 	/** @var array<string,string> */
 	private	$headers=[];
 	/** @var array<string,string> */
@@ -35,28 +35,40 @@ abstract class request {
 *@return string
 *Returns the request client ip.
 */
-	public function                     get_ip() {
+	public function get_ip() {
 
 		return $this->ip;
 	}
 
-	//!Returns the request method.
-	public function						get_method() {
+/**
+*@return string
+*Returns the request method.
+*/
+	public function get_method() {
 		return $this->method;
 	}
 
-	//!Returns the request URI
-	public function						get_uri() {
+/**
+*@return string
+*Returns the request URI
+*/
+	public function get_uri() {
 		return $this->uri;
 	}
 
-	//!Returns the request URI
-	public function						get_protocol() {
+/**
+*@return string
+*Returns the protocol
+*/
+	public function get_protocol() {
 		return $this->protocol;
 	}
 
-	//!Returns the request URI without the query string attached.
-	public function						get_uri_without_query_string() {
+/**
+*@return string
+*Returns the request URI without the query string attached.
+*/
+	public function get_uri_without_query_string() {
 
 		$qstrlen=strlen($this->query_string);
 
@@ -70,21 +82,32 @@ abstract class request {
 
 	//Header manipulation....
 
-	//!Returns true if the headers contain the given key.
-	public function 					has_header($_key) {
+/**
+*Returns true if the headers contain the given key.
+*@param string $_key
+*@return bool
+*/
+	public function has_header($_key) {
 
 		$lckey=strtolower($_key);
 		return array_key_exists($lckey, $this->ci_headers_to_headers_map);
 	}
 
-	//!Returns the array of headers.
-	public function						get_headers() {
+/**
+*Returns the array of headers.
+*@return array<string, string>
+*/
+	public function get_headers() {
 
 		return $this->headers;
 	}
 
-	//!Returns the given header. Throws if not present.
-	public function						header($_key) {
+/**
+*Returns the given header. Throws if not present.
+*@param string $_key
+*@return string
+*/
+	public function header($_key) {
 
 		if(!$this->has_header($_key)) {
 
@@ -96,39 +119,60 @@ abstract class request {
 		return $this->headers[$key];
 	}
 
-	//!Convenience alias.
-	public function						get_header($_key) {
+/**
+*Convenience alias.
+*@param string $_key
+*@return string
+*/
+	public function get_header($_key) {
 
 		return $this->header($_key);
 	}
 
 //Query string manipulation....
 
-	//!Returns the raw query string.
-	public function 					get_query_string() {
+/**
+*Returns the raw query string.
+*@return string
+*/
+	public function get_query_string() {
+
 		return $this->query_string;
 	}
 
-	//!Returns the query string parsed as an array.
+/**
+*Returns the query string parsed as an array.
+*@return array<string, string>
+*/
 	public function 					get_query_string_form() {
 
 		if(null==$this->query_string_form) {
 
 			parse_str($this->query_string, $this->query_string_form);
 		}
+
 		return $this->query_string_form;
 	}
 
-	//!Attempts to retrieve $_key from a urlencoded query string. Returns
-	//!$_default if not possible.
-	public function						query($_key, $_default=null) {
+/**
+*Attempts to retrieve $_key from a urlencoded query string. Returns
+*$_default if not possible.
+*@param string $_key
+*@param string $_default
+*@return string
+*/
+	public function query($_key, $_default="") {
 
 		$data=$this->get_query_string_form();
 		return $this->has_query($_key) ? $data[$_key] : $_default;
 	}
 
-	//!Returns true if the query string has the given key.
-	public function						has_query($_key) {
+/**
+*Returns true if the query string has the given key.
+*@param string $_key
+*@return bool
+*/
+	public function has_query($_key) {
 
 		return isset($this->get_query_string_form()[$_key]);
 	}
@@ -136,28 +180,47 @@ abstract class request {
 
 //Cookie manipulation....
 
-	//!Returns the raw query string.
-	public function						get_raw_cookies() {
+/**
+*Returns the raw query string.
+*@return string
+*/
+	public function get_raw_cookies() {
+
 		return $this->raw_cookies;
 	}
 
-	//!Returns true if the cookie exists.
-	public function						has_cookie($_key) {
+/**
+*Returns true if the cookie exists.
+*@param string $_key
+*@return bool
+*/
+	public function has_cookie($_key) {
 
 		return is_array($this->cookies) && array_key_exists($_key, $this->cookies);
 	}
 
-	//Returns the given cookie.
-	public function						cookie($_key, $_default=null) {
+/**
+*Returns the given cookie.
+*@param string $_key
+*@param string $_default
+*@return string
+*/
+	public function cookie($_key, $_default="") {
 
 		if(!$this->has_cookie($_key)) {
+
 			return $_default;
 		}
 		return $this->cookies[$_key];
 	}
 
-	//!Convenience alias.
-	public function                     get_cookie($_key, $_default=null) {
+/**
+*Convenience alias.
+*@param string $_key
+*@param string $_default
+*@return string
+*/
+	public function get_cookie($_key, $_default="") {
 
 		return $this->cookie($_key, $_default);
 	}
@@ -170,8 +233,9 @@ abstract class request {
 *@param int $_expiration_seconds
 *@param string $_path
 *@param string $_domain
+*@return self
 */
-	public function						set_cookie($_key, $_value, $_expiration_seconds=0, $_path="", $_domain="") {
+	public function set_cookie($_key, $_value, $_expiration_seconds=0, $_path="", $_domain="") {
 
 		$expiration_seconds=-1===$_expiration_seconds
 			? 0
@@ -183,11 +247,16 @@ abstract class request {
 		}
 
 		$this->rebuild_raw_cookie_string();
+		return $this;
 	}
 
-	//!Removes the given cookie. Does not affect superglobals. Will have an
-	//!effect on future requests.
-	public function						unset_cookie($_key) {
+/**
+*Removes the given cookie. Does not affect superglobals. Will have an
+*effect on future requests.
+*@param string $_key
+*@return self
+*/
+	public function unset_cookie($_key) {
 
 		setcookie($_key, "", time());
 		if($this->has_cookie($_key)) {
@@ -195,10 +264,14 @@ abstract class request {
 		}
 
 		$this->rebuild_raw_cookie_string();
+		return $this;
 	}
 
-	//!Parses the request as a string.
-	public function						to_string() {
+/**
+*Parses the request as a string.
+*@return string
+*/
+	public function to_string() {
 
 		$headers='';
 		foreach($this->headers as $k => $v) {
@@ -212,12 +285,20 @@ abstract class request {
 R;
 	}
 
-	protected function 					__construct(
-		/*string*/ $_ip,
-		/*string*/ $_method,
-		/*string*/ $_uri,
-		/*string*/ $_query_string,
-		/*string*/ $_protocol,
+/**
+*@param string $_ip
+*@param string $_method
+*@param string $_uri
+*@param string $_query_string
+*@param string $_protocol
+*@param array<string, string> $_headers
+*/
+	protected function __construct(
+		$_ip,
+		$_method,
+		$_uri,
+		$_query_string,
+		$_protocol,
 		array $_headers
 	) {
 
@@ -241,12 +322,19 @@ R;
 		}
 	}
 
-	private function					rebuild_raw_cookie_string() {
+/**
+*@return void
+*/
+	private function rebuild_raw_cookie_string() {
 
 		$this->raw_cookies=implode(';', $this->cookies);
 	}
 
-	private function					load_cookies($_raw_cookie_string) {
+/**
+*@param string $_raw_cookie_string
+*@return void
+*/
+	private function load_cookies($_raw_cookie_string) {
 
 		$this->raw_cookies=$_raw_cookie_string;
 		$this->cookies=array_reduce(explode(';', $this->raw_cookies), function($_carry, $_item) {
