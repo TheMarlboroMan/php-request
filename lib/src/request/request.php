@@ -301,6 +301,7 @@ R;
 *@param string $_query_string
 *@param string $_protocol
 *@param array<string, string> $_headers
+*@param array<string, string> $_cookies
 */
 	protected function __construct(
 		$_ip,
@@ -308,7 +309,8 @@ R;
 		$_uri,
 		$_query_string,
 		$_protocol,
-		array $_headers
+		array $_headers,
+		array $_cookies
 	) {
 
 		$this->ip=$_ip;
@@ -318,12 +320,7 @@ R;
 		$this->query_string=$_query_string;
 		$this->status="{$_method} {$_uri} {$_protocol}";
 		$this->headers=$_headers;
-		$this->cookies=[];
-
-		//TODO: Mind the casing!.
-		if(isset($this->headers['Cookie'])) {
-			$this->load_cookies($this->headers['Cookie']);
-		}
+		$this->cookies=$_cookies;
 
 		foreach($this->headers as $key => $value) {
 
@@ -337,23 +334,5 @@ R;
 	private function rebuild_raw_cookie_string() {
 
 		$this->raw_cookies=implode(';', $this->cookies);
-	}
-
-/**
-*@param string $_raw_cookie_string
-*@return void
-*/
-	private function load_cookies($_raw_cookie_string) {
-
-		$this->raw_cookies=$_raw_cookie_string;
-		$this->cookies=array_reduce(explode(';', $this->raw_cookies), function($_carry, $_item) {
-
-			if(false!==strpos($_item, '=')) {
-				list($key, $value)=explode('=', $_item);
-				$_carry[trim($key)]=trim(urldecode($value));
-			}
-
-			return $_carry;
-		}, []);
 	}
 };
