@@ -103,6 +103,15 @@ abstract class request {
 	}
 
 /**
+*Returns the array of cookies.
+*@return array<string, string>
+*/
+	public function get_cookies() {
+
+		return $this->cookies;
+	}
+
+/**
 *Returns the given header. Throws if not present.
 *@param string $_key
 *@return string
