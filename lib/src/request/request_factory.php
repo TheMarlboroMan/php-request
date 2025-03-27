@@ -77,7 +77,7 @@ class request_factory {
 
 		return array_reduce(
 			explode(';', $_raw_cookie_string), 
-			function($_carry, $_item) {
+			function($_carry, $_item) use ($_options) {
 
 				if(false!==strpos($_item, '=')) {
 
