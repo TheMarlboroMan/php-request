@@ -20,7 +20,14 @@ class request_factory {
 /**
 *@return request
 */
-	public static function	from_apache_request() {
+	public static function	from_apache_request(
+		factory_options $_options=null
+	) {
+
+		if(null===$_options) {
+
+			$_options=new factory_options();
+		}
 
 		if(php_sapi_name()=="cli") {
 			
@@ -47,9 +54,49 @@ class request_factory {
 					\file_get_contents('php://input') :
 					raw_request_body_tools::raw_body_from_php_parsed_data($_POST, $_FILES, $headers);
 
+		//TODO: Mind the casing!.
+		$cookies=array_key_exists("Cookie", $headers)
+			? self::load_cookies($headers["Cookie"], $_options)
+			: [];
+
 		return self::is_multipart($headers) ?
-				new multipart_request($ip, $method, $uri, $query_string, $protocol, $headers, $body) :
-				new urlencoded_request($ip, $method, $uri, $query_string, $protocol, $headers, $body);
+				new multipart_request($ip, $method, $uri, $query_string, $protocol, $headers, $body, $cookies) :
+				new urlencoded_request($ip, $method, $uri, $query_string, $protocol, $headers, $body, $cookies);
+	}
+
+/**
+*@param string $_raw_cookie_string
+*@return array<string, string>
+*/
+	private static function load_cookies(
+		$_raw_cookie_string,
+		factory_options $_options
+	) {
+
+		return array_reduce(
+			explode(';', $_raw_cookie_string), 
+			function($_carry, $_item) {
+
+				if(false!==strpos($_item, '=')) {
+
+					list($key, $value)=explode('=', $_item, 2);
+
+					if($_options->trim_cookies) {
+						$value=trim($value);
+					}
+
+					if($_options->urldecode_cookies) {
+
+						$value=urldecode($value);
+					}
+
+					$_carry[trim($key)]=$value;
+				}
+
+				return $_carry;
+			}, 
+			[]
+		);
 	}
 
 /**
