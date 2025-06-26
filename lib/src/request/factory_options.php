@@ -1,10 +1,11 @@
 <?php
+declare(strict_types=1);
 namespace request;
 
 class factory_options {
 
-	/** @var bool */
-	public $trim_cookies=true;
-	/** @var bool */
-	public $urldecode_cookies=true;
+	public function __construct(
+		public bool $trim_cookies=true,
+		public bool $urldecode_cookies=true
+	) {}
 }

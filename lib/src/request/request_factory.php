@@ -1,30 +1,37 @@
 <?php
+declare(strict_types=1);
+
 namespace request;
 
 
 //https://stackoverflow.com/questions/41427359/phpunit-getallheaders-not-work/4142872
 if (!function_exists('getallheaders')) {
 
-	function getallheaders() {
+/**
+*@return array<string, string>
+*/
+	function getallheaders() : array {
 
 		$headers = [];
 		foreach ($_SERVER as $name => $value) {
+
 			if (substr($name, 0, 5) == 'HTTP_') {
-				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+
+				$headername=str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+				$headers[$headername]=$value;
 			}
 		}
+
+		//@phpstan-ignore-next-line $_SERVER is a map of string to string, sorry.
 		return $headers;
 	}
 }
 
 class request_factory {
 
-/**
-*@return request
-*/
 	public static function	from_apache_request(
-		factory_options $_options=null
-	) {
+		?factory_options $_options=null
+	) : request {
 
 		if(null===$_options) {
 
@@ -37,24 +44,38 @@ class request_factory {
 		}
 
 		$headers=getallheaders();
+		/** @var string */
 		$method=$_SERVER['REQUEST_METHOD'];
+		/** @var string */
 		$uri_host=isset($headers['Host']) ? $headers['Host'] : '';
+		/** @var string */
 		$protocol=$_SERVER['SERVER_PROTOCOL'];
-		$scheme=isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : null;
+		/** @var string */
+		$scheme=isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : "";
 		$ip=self::extract_ip();
 
 
-		if(!$scheme) {
+		if(!strlen($scheme)) {
+
 		    $scheme=isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off' ? 'https' : 'http';
 		}
 
-		$uri=$scheme.'://'.$uri_host.$_SERVER['REQUEST_URI'];
+		/** @var string */
+		$request_uri=$_SERVER['REQUEST_URI'];
+		$uri="{$scheme}://{$uri_host}{$request_uri}";
 
+		/** @var string */
 		$query_string=$_SERVER['QUERY_STRING'];
 
 		$body=self::can_get_body_from_input($headers, $method) ?
-					\file_get_contents('php://input') :
-					raw_request_body_tools::raw_body_from_php_parsed_data($_POST, $_FILES, $headers);
+			\file_get_contents('php://input') :
+			//@phpstan-ignore-next-line sorry, but these superglobals are always arrays of string to string!
+			raw_request_body_tools::raw_body_from_php_parsed_data($_POST, $_FILES, $headers);
+
+		if(false===$body) {
+
+			throw new exception("could not read php input for request body!");
+		}
 
 		//TODO: Mind the casing!.
 		$cookies=array_key_exists("Cookie", $headers)
@@ -67,17 +88,18 @@ class request_factory {
 	}
 
 /**
-*@param string $_raw_cookie_string
 *@return array<string, string>
 */
 	private static function load_cookies(
-		$_raw_cookie_string,
+		string $_raw_cookie_string,
 		factory_options $_options
-	) {
+	) : array {
 
-		return array_reduce(
-			explode(';', $_raw_cookie_string), 
-			function($_carry, $_item) use ($_options) {
+		/** @var array<string, string> */
+		$result=array_reduce(
+			explode(';', $_raw_cookie_string),
+			/** @param array<string, string> $_carry */
+			function(array $_carry, string $_item) use ($_options) : array {
 
 				if(false!==strpos($_item, '=')) {
 
@@ -92,6 +114,7 @@ class request_factory {
 						$value=urldecode($value);
 					}
 
+
 					$_carry[trim($key)]=$value;
 				}
 
@@ -99,35 +122,47 @@ class request_factory {
 			}, 
 			[]
 		);
+
+		return $result;
 	}
 
 /**
 *@param array<string, string> $_headers
 *@return bool
 */
-	private static function	is_multipart($_headers) {
+	private static function	is_multipart(
+		array $_headers
+	) : bool {
 
 			$header_value=raw_request_body_tools::get_content_type($_headers);
 			return $header_value && false!==strpos($header_value, 'multipart/form-data');
 	}
 
-	//!Body cannot be retrieved from php://input when there is a multipart/form-data content type in a post request.
-	private static function can_get_body_from_input(array $_headers, $_method) {
+/**
+*Body cannot be retrieved from php://input when there is a multipart/form-data content type in a post request.
+*@param array<string, string> $_headers
+*/
+	private static function can_get_body_from_input(
+		array $_headers, 
+		string $_method
+	) : bool {
 
 		$header_value=raw_request_body_tools::get_content_type($_headers);
 		return ! ('POST'===strtoupper($_method) && null!==$header_value && false!==strpos($header_value, 'multipart/form-data'));
 	}
 
-/**
-*@return string
-*/
-	private static function extract_ip() {
+	private static function extract_ip() : string {
 
 		foreach(["HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"] as $key) {
 
-			if(isset($_SERVER[$key]) && strlen($_SERVER[$key])) {
+			if(array_key_exists($key, $_SERVER)) {
 
-				return $_SERVER[$key];
+				/** @var string */
+				$val=$_SERVER[$key];
+				if(strlen($val)) {
+
+					return $val;
+				}
 			}
 		}
 

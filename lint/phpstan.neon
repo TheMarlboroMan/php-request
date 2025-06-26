@@ -1,0 +1,7 @@
+parameters:
+	rememberPossiblyImpureFunctionValues: false
+	level: 10
+	paths:
+		- ../lib
+	excludePaths:
+		- ../examples

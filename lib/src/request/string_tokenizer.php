@@ -1,26 +1,25 @@
 <?php
+declare(strict_types=1);
 namespace request;
 
 class string_tokenizer {
 
-	private $string;
-	private $delimiter=null;
-	private $index=0;
-	private $last_index=0;
+	public function __construct(
+		private string $string, 
+		private string $delimiter,
+		private int $index=0,
+		private int $last_index=0
+	) {
 
-	public function __construct($_s, $_d) {
-
-		$this->string=$_s;
-		$this->delimiter=$_d;
 		$this->last_index=strlen($this->string)-1;
 	}
 
-	public function is_done() {
+	public function is_done() : bool {
 
 		return $this->index>$this->last_index;
 	}
 
-	public function next() {
+	public function next() : string {
 
 		$result='';
 		

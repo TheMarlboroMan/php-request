@@ -1,35 +1,52 @@
 <?php
+declare(strict_types=1);
 namespace request;
 
 class request_body {
 
-	private $headers;
-	private $body;
-	private $name; //After content disposition, which is always form-data.
-	private $filename=null;
+/**
+*@param array<string, string> $headers
+*/
+	public function __construct(
+		private string $body,
+		private array $headers,
+		bool &$_named_as_array
+	) {
+		//TODO: Mind casing...
+		if(isset($this->headers['Content-Disposition'])) {
 
-	public function	is_file() {
+			$this->parse_content_disposition_header($this->headers['Content-Disposition'], $_named_as_array);
+		}
+	}
+
+
+	public function	is_file() : bool {
 		return null!==$this->filename;
 	}
 
-	public function get_filename() {
+	public function get_filename() : ?string {
 		return $this->filename;
 	}
 	
-	public function get_headers() {
+/**
+*@return array<string, string>
+*/
+	public function get_headers() : array {
 	
 		return $this->headers;
 	}
 
-	public function get_name() {
+	public function get_name() : string {
 			return $this->name;
 	}
 
-	public function get_body(){
+	public function get_body() : string {
 			return $this->body;
 	}
 	
-	public function to_string($_separator) {
+	public function to_string(
+		string $_separator
+	) : string {
 
 		$headers='';
 		foreach($this->headers as $k => $v) {
@@ -44,26 +61,20 @@ class request_body {
 R;
 	}
 
-	public function __construct($_b, array $_h, &$_named_as_array) {
-		$this->body=$_b;
-		$this->headers=$_h;
+	private function parse_content_disposition_header(
+		string $_value, 
+		bool &$_named_as_array
+	) : void {
 
-		//TODO: Mind casing...
-		if(isset($this->headers['Content-Disposition'])) {
-			$this->parse_content_disposition_header($this->headers['Content-Disposition'], $_named_as_array);
-		}
-	}
+		$find_value=function(string $_str, string $_find) : string {
 
-	private function parse_content_disposition_header($_value, &$_named_as_array) {
-
-		$find_value=function($_str, $_find) {
 			$pos=strpos($_str, $_find);
 			if(false!==$pos) {
 				$end_marker=$pos+strlen($_find);
 
 				return substr($_str, $end_marker, strpos($_str, '"', $end_marker)-$end_marker);
 			}
-			return null;
+			return "";
 		};
 
 		$this->name=$find_value($_value, ' name="');
@@ -74,4 +85,7 @@ R;
 
 		$this->filename=$find_value($_value, ' filename="');
 	}
+
+	private string $name=""; //After content disposition, which is always form-data.
+	private ?string $filename=null;
 }

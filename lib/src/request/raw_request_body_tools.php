@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace request;
 
 class raw_request_body_tools {
@@ -6,24 +7,40 @@ class raw_request_body_tools {
 	const					win_line_feed="\r\n";
 	const					unix_line_feed="\n";
 
-	//!Stupid fetch will lowercase all headers.
-	public static function	get_content_type(array $_headers) {
 
-		return isset($_headers['Content-Type'])
+/**
+*@param array<string, string> $_headers
+*/
+	public static function	get_content_type(
+		array $_headers
+	) :?string {
+
+		return array_key_exists("Content-Type", $_headers)
 			? $_headers['Content-Type']
-			: (isset($_headers['content-type'])
+			: (array_key_exists('content-type', $_headers)
 				? $_headers['content-type']
 				: null);
 	}
 
-	public static function	boundary_from_content_type_header($_header) {
+	public static function	boundary_from_content_type_header(
+		string $_header
+	) : string {
 
 		//Lol... Explode the header by ;, the second part is the boundary=xxxx part. Explode that by = and return the second part.
 		return 	trim(explode('=', explode(';',$_header, 2)[1])[1]);
 	}
 
-	//!Converts the post and files superglobals into their original raw forms.
-	public static function raw_body_from_php_parsed_data(array $_post, array $_files, array $_headers) {
+/**
+*Converts the post and files superglobals into their original raw forms.
+*@param array<string, string> $_post
+*@param array<string, array<string, mixed> > $_files
+*@param array<string, string> $_headers
+*/
+	public static function raw_body_from_php_parsed_data(
+		array $_post, 
+		array $_files, 
+		array $_headers
+	) : string {
 
 		$content_type=raw_request_body_tools::get_content_type($_headers);
 		if(null===$content_type) {
@@ -41,15 +58,23 @@ class raw_request_body_tools {
 		foreach($_files as $k => $v) {
 
 			//TODO: Will lie about the contents of the stuff... Better to see how it is done in raw.
-			if(!file_exists($v['tmp_name'])) {
+			/** @var string */
+			$temp_name=$v["tpm_name"];
+
+			if(!file_exists($temp_name)) {
 				continue;
 			}
 
-			$file_body=file_get_contents($v['tmp_name']);
+			$file_body=file_get_contents($temp_name);
+			/** @var string */
+			$name=$v["name"];
+			/** @var string */
+			$type=$v["type"];
+
 			$file_data.=<<<R
 {$boundary}
-Content-Disposition: form-data; name="{$k}"; filename="{$v['name']}"
-Content-Type: {$v['type']}
+Content-Disposition: form-data; name="{$k}"; filename="{$name}"
+Content-Type: {$type}
 
 {$file_body}
 
@@ -61,11 +86,19 @@ R;
 R;
 	}
 
-	private static function reduce_array($_data, $_boundary, $_key_name=null) {
+/**
+*@param array<string, string | array<string,string> > $_data
+*/
+	private static function reduce_array(
+		array $_data, 
+		string $_boundary, 
+		?string $_key_name=null
+	) : string {
 
 		$result='';
 
-		foreach($_data as $k => $v) {	
+		foreach($_data as $k => $v) {
+
 			if(is_array($v)) {
 				//TODO: What if these keys are named???
 				$result.=self::reduce_array($v, $_boundary, $k.'[]');
@@ -80,32 +113,47 @@ Content-Disposition: form-data; name="{$name}"
 {$v}
 
 R;
-			}			
+			}
 		}
 
 		return $result;
 	}
 
-	public static function	parse_multipart_bodies(array &$_bodies, $_body, $_boundary) {
+/**
+*@param array<string, request_body> $_bodies
+*@param-out array<string, request_body> $_bodies
+*/
+	public static function	parse_multipart_bodies(
+		array &$_bodies, 
+		string $_body, 
+		string $_boundary
+	) :void {
 
 		$end_boundary=$_boundary.'--';
 		$current_body='';
 		$_body=str_replace(self::win_line_feed,self::unix_line_feed,$_body);
 		$tk=new string_tokenizer($_body, self::unix_line_feed);
 
-		$add_body=function() use (&$current_body, &$_bodies) {
+		/** @var array<string, int> */
+		$used_name_count=[];
+
+		$add_body=function() use (&$current_body, &$_bodies, &$used_name_count) {
 			
 			$named_as_array=false;
 			$body=self::request_body_from_raw_part($current_body, $named_as_array);
 			$current_body='';
 
-			//A body can be an array, so we need its name too.
+			//A body can be an array.. in which case we'll just number it. Sorry.
 			$name=$body->get_name();
 			if($named_as_array) {
-				if(!isset($_bodies[$name])) {
-					$_bodies[$name]=array();
+
+				if(!array_key_exists($name, $used_name_count)) {
+
+					$used_name_count[$name]=0;
 				}
-				$_bodies[$name][]=$body;
+
+				$array_name=$name.$used_name_count[$name]++;
+				$_bodies[$array_name]=$body;
 			}
 			else {
 				$_bodies[$name]=$body;
@@ -130,7 +178,13 @@ R;
 		}
 	}
 
-	public static function	request_body_from_raw_part($_raw, &$_named_as_array) {
+/**
+*@param-out bool $_named_as_array
+*/
+	public static function	request_body_from_raw_part(
+		string $_raw, 
+		bool &$_named_as_array
+	) : request_body {
 
 		$_raw=str_replace(self::win_line_feed,self::unix_line_feed,$_raw);
 		$tk=new string_tokenizer($_raw, self::unix_line_feed);
