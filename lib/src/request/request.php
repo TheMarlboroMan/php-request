@@ -8,8 +8,8 @@ abstract class request {
 	/** @return string */
 	protected abstract function			body_to_string();
 
-	/** @var int */
-	private	$status=0;
+	/** @var string */
+	private	$status="";
 	/** @var string */
 	private	$method="";
 	/** @var string */
@@ -205,7 +205,7 @@ abstract class request {
 */
 	public function has_cookie($_key) {
 
-		return is_array($this->cookies) && array_key_exists($_key, $this->cookies);
+		return array_key_exists($_key, $this->cookies);
 	}
 
 /**
